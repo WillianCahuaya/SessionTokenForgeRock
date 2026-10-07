@@ -22,7 +22,7 @@ images:
   newName: us-docker.pkg.dev/forgeops-public/images/idm
   newTag: 7.5.2
 - name: ig
-  newName: us-docker.pkg.dev/forgeops-public/images/ig
+  newName: ig-local
   newTag: 2025.9.0
 labels:
 - includeSelectors: true
