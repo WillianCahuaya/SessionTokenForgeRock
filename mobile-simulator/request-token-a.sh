@@ -21,5 +21,5 @@ curl -k \
   --data-urlencode "grant_type=password" \
   --data-urlencode "username=${USERNAME}" \
   --data-urlencode "password=${PASSWORD}" \
-  --data-urlencode "scope=profile" \
+  --data-urlencode "scope=mail employeenumber"
   --data-urlencode "auth_chain=ldapService"
