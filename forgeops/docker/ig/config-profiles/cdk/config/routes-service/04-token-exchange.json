@@ -1,0 +1,78 @@
+{
+    "name": "04-token-exchange",
+    "monitor": false,
+    "condition": "${find(request.uri.path, '^/token/exchange$')}",
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "name": "OAuth2ResourceServerFilter-token-exchange",
+                    "type": "OAuth2ResourceServerFilter",
+                    "config": {
+                        "scopes": ["mail", "employeenumber"],
+                        "requireHttps": false,
+                        "realm": "OpenIG",
+                        "accessTokenResolver": {
+                            "name": "token-resolver-token-exchange",
+                            "type": "TokenIntrospectionAccessTokenResolver",
+                            "config": {
+                                "amService": "AmService-1",
+                                "providerHandler": {
+                                    "type": "Chain",
+                                    "config": {
+                                        "filters": [
+                                            {
+                                                "type": "ClientSecretBasicAuthenticationFilter",
+                                                "config": {
+                                                    "clientId": "resource-server",
+                                                    "clientSecretId": "agent.password",
+                                                    "secretsProvider": "amSecretsProvider"
+                                                }
+                                            }
+                                        ],
+                                        "handler": "ForgeRockClientHandler"
+                                    }
+                                },
+                                "cache": {
+                                    "enabled": false
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "JwtBuilderFilter-token-b",
+                    "type": "JwtBuilderFilter",
+                    "config": {
+                        "template": {
+                            "iss": "forgeops-ig",
+                            "sub": "${contexts.oauth2.accessToken.info.sub}",
+                            "user_id": "${contexts.oauth2.accessToken.info.user_id}",
+                            "username": "${contexts.oauth2.accessToken.info.username}",
+                            "client_id": "${contexts.oauth2.accessToken.info.client_id}",
+                            "scope": "${contexts.oauth2.accessToken.info.scope}",
+                            "iat": "${now.epochSeconds}",
+                            "exp": "${now.plusSeconds(60).epochSeconds}"
+                        },
+                        "secretsProvider": "tokenBSecretsProvider",
+                        "signature": {
+                            "secretId": "tokenBSigningKey",
+                            "algorithm": "RS256"
+                        }
+                    }
+                }
+            ],
+            "handler": {
+                "type": "StaticResponseHandler",
+                "config": {
+                    "status": 200,
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "entity": "{\"access_token\":\"${contexts.jwtBuilder.value}\",\"token_type\":\"Bearer\",\"expires_in\":60}"
+                }
+            }
+        }
+    }
+}
