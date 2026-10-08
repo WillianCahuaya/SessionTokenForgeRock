@@ -1,0 +1,672 @@
+{
+  "info": {
+    "_postman_id": "37c886cc-b0fb-439e-8b59-707af592d747",
+    "name": "Mibanco",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8112246"
+  },
+  "item": [
+    {
+      "name": "ForgeRoock",
+      "item": [
+        {
+          "name": "ForgeRockEnv",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const ENV = \"DEV\";\r",
+                  "const am_url = \"http://localhost:8080\";\r",
+                  "const ig_url = \"http://localhost:8081\";\r",
+                  "const client_id = \"mobile-simulator\";\r",
+                  "const client_secret = \"mobile-secret\";\r",
+                  "const username = \"testuser\";\r",
+                  "const password = \"Password123!\";\r",
+                  "const tokenA = \"123!\";\r",
+                  "const amadmin_password = \"9HKHQeCZNBL8GEx7qwkmrCpq\";\r",
+                  "\r",
+                  "\r",
+                  "postman.setEnvironmentVariable(\"ENV\", ENV);\r",
+                  "postman.setEnvironmentVariable(\"am_url\", am_url);\r",
+                  "postman.setEnvironmentVariable(\"ig_url\", ig_url);\r",
+                  "postman.setEnvironmentVariable(\"client_id\", client_id);\r",
+                  "postman.setEnvironmentVariable(\"client_secret\", client_secret);\r",
+                  "postman.setEnvironmentVariable(\"username\", username);\r",
+                  "postman.setEnvironmentVariable(\"password\", password);\r",
+                  "postman.setEnvironmentVariable(\"tokenA\", tokenA);\r",
+                  "postman.setEnvironmentVariable(\"amadmin_password\", amadmin_password);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://www.postman-echo.com/get",
+              "protocol": "http",
+              "host": [
+                "www",
+                "postman-echo",
+                "com"
+              ],
+              "path": [
+                "get"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR Token Mobile AM",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"access_token\", pm.response.json()['access_token']);\r",
+                  "pm.environment.set(\"refresh_token\", pm.response.json()['refresh_token']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                },
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "employeenumber mail",
+                  "type": "text"
+                },
+                {
+                  "key": "auth_chain",
+                  "value": "ldapService",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{am_url}}/am/oauth2/access_token",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "oauth2",
+                "access_token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR IG Token Introspect",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{ig_url}}/rs-tokenintrospect",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "rs-tokenintrospect"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR IG Token Exchange",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{ig_url}}/token/exchange",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "token",
+                "exchange"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ForgeRock AM",
+      "item": [
+        {
+          "name": "AM Generate Token ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"admin_token\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Username",
+                "value": "amadmin",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Password",
+                "value": "{{amadmin_password}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "resource=2.0",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/authenticate",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "authenticate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=3.0",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin12345\",\n    \"userpassword\": \"admin12345\",\n    \"mail\": \"testuser@example.com\",\n    \"givenName\": \"Admin\",\n    \"sn\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/users/?_action=create",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "users",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "_action",
+                  "value": "create"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=3.0",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userpassword\": \"admin12345\"\n}"
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/users/testuser",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "users",
+                "testuser"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Find User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/users/admin12345?_fields=username,uid,inetUserStatus,givenName",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "users",
+                "admin12345"
+              ],
+              "query": [
+                {
+                  "key": "_fields",
+                  "value": "username,uid,inetUserStatus,givenName"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Auth User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Username",
+                "value": "admin12345",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Password",
+                "value": "admin12345",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "resource=2.0",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/authenticate",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "authenticate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
