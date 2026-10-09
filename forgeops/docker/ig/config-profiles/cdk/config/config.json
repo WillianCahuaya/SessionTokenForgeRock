@@ -1,4 +1,24 @@
 {
+    "properties": {
+        "amUsername": "testuser",
+        "amPassword": "Password123!",
+        "companyIgAgentUsername": "company-ig-agent",
+
+        "sessionApiBaseUrl": "http://localhost:8081/kube",
+        "idcBaseUrl": "http://am.forgerock.svc.cluster.local/am",
+
+        "revocationClientId": "ig-session-revoker",
+        "revocationClientSecret": "adminoauth",
+
+        "ciamSubscriptionKey": "123456789012345678901234567890123",
+
+        "introspectionClientId": "mobile-simulator",
+        "introspectionClientSecret": "mobile-secret"
+    },
+    "globalDecorator": {
+        "timer": true,
+        "capture": "all"
+    },
     "handler": {
         "type": "DispatchHandler",
         "config": {
@@ -34,6 +54,91 @@
             "type": "JwtSession"
         },
         {
+            "name": "company-am-service",
+            "type": "AmService",
+            "config": {
+                "url": "http://am/am",
+                "realm": "/",
+                "version": "7.1",
+                "agent": {
+                    "username": "${companyIgAgentUsername}",
+                    "passwordSecretId": "company-ig-agent.password"
+                },
+                "secretsProvider": "amSecretsProvider",
+                "sessionCache": {
+                    "enabled": false
+                },
+                "sessionIdleRefresh": {
+                    "enabled": true,
+                    "interval": "3 m"
+                }
+            }
+        },
+        {
+            "name": "Authenticate to AM Chain",
+            "type": "Chain",
+            "config": {
+                "handler": "ClientHandler",
+                "filters": ["Authenticate to AM Filter"]
+            }
+        },
+        {
+            "name": "Authenticate to AM Filter",
+            "type": "HeaderFilter",
+            "config": {
+                "messageType": "REQUEST",
+                "add": {
+                    "Authorization": [
+                        "Basic ${encodeBase64(join(array(introspectionClientId, introspectionClientSecret), ':'))}"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "company-token-introspection",
+            "type": "TokenIntrospectionAccessTokenResolver",
+            "config": {
+                "amService": "company-am-service",
+                "providerHandler": "Authenticate to AM Chain"
+            }
+        },
+        {
+            "name": "company-cache-access-token",
+            "type": "CacheAccessTokenResolver",
+            "config": {
+                "enabled": true,
+                "defaultTimeout": "1 hour",
+                "maximumTimeToCache": "1 hour",
+                "delegate": "company-token-introspection",
+                "amService": "company-am-service"
+            }
+        },
+        {
+            "name": "company-security-headers",
+            "type": "ScriptableFilter",
+            "config": {
+                "type": "application/x-groovy",
+                "file": "SecurityHeaders.groovy"
+            }
+        },
+        {
+            "name": "company-conditional-integration-session",
+            "type": "ConditionalFilter",
+            "config": {
+                "condition": "${not find(request.uri.path, '/delete')}",
+                "delegate": "company-get-session-info"
+            }
+        },
+        {
+            "name": "company-Oauth-integration-session",
+            "type": "OAuth2ResourceServerFilter",
+            "config": {
+                "requireHttps": false,
+                "scopes": ["IG:Integration Session"],
+                "accessTokenResolver": "company-cache-access-token"
+            }
+        },
+        {
             "name": "AmService-1",
             "type": "AmService",
             "config": {
@@ -60,8 +165,8 @@
             "_capture": "all"
         },
         {
-            "type": "SecretsProvider",
             "name": "amSecretsProvider",
+            "type": "SecretsProvider",
             "config": {
                 "stores": [
                     {
@@ -69,7 +174,8 @@
                         "config": {
                             "_comment": "base64('password') = 'cGFzc3dvcmQ='",
                             "secrets": {
-                                "agent.password": "cGFzc3dvcmQ="
+                                "agent.password": "cGFzc3dvcmQ=",
+                                "company-ig-agent.password": "YWRtaW5pZw=="
                             }
                         }
                     }

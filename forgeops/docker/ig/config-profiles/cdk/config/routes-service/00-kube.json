@@ -1,0 +1,22 @@
+{
+    "name": "00-kube",
+    "condition": "${find(request.uri.path, '^/kube$') or (request.method == 'GET' and find(request.uri.path, '^/health$')) or (find(request.uri.path, '^/demo$') and find(request.uri.query, 'test=true'))}",
+    "handler": {
+        "type": "StaticResponseHandler",
+        "config": {
+            "status": 200,
+            "headers": {
+                "Cache-Control": ["none"],
+                "Content-Type": ["text/plain"],
+                "X-Content-Type-Options": ["nosniff"]
+            },
+            "entity": "Kubernetes monitoring request, Used to disabled Logs. Your path is ${request.uri.path}"
+        }
+    },
+    "monitor": {
+        "enabled": false
+    },
+    "globalDecorators": {
+        "timer": false
+    }
+}

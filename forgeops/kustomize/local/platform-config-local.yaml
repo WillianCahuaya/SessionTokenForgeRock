@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: ig-session-config
+    namespace: forgerock
+data:
+    ESV_IG_APIS_SESSION_URL: 'http://localhost:8081/kube'

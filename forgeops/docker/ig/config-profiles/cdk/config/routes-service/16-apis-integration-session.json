@@ -1,0 +1,105 @@
+{
+    "name": "16-apis-integration-session",
+    "condition": "${find(request.uri.path, '^/integration-session')}",
+    "baseURI": "${sessionApiBaseUrl}",
+    "heap": [
+        {
+            "name": "company-get-session-info",
+            "type": "SessionInfoFilter",
+            "config": {
+                "amService": "company-am-service",
+                "ssoToken": "${contexts.oauth2.accessToken.info.sessionCookie}"
+            }
+        }
+    ],
+    "handler": {
+        "type": "Chain",
+        "config": {
+            "filters": [
+                {
+                    "type": "AllowOnlyFilter",
+                    "config": {
+                        "rules": [
+                            {
+                                "name": "whiteListed path",
+                                "destination": [
+                                    {
+                                        "paths": [
+                                            "^/integration-session/ciam/session/v1/register$",
+                                            "^/integration-session/ciam/session/v1/delete$"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "company-Oauth-integration-session",
+                    "type": "OAuth2ResourceServerFilter",
+                    "config": {
+                        "requireHttps": false,
+                        "scopes": ["IG:Integration Session"],
+                        "accessTokenResolver": "company-cache-access-token"
+                    }
+                },
+                {
+                    "type": "UriPathRewriteFilter",
+                    "config": {
+                        "mappings": {
+                            "/integration-session": "/"
+                        }
+                    }
+                },
+                {
+                    "name": "company-conditional-integration-session",
+                    "type": "ConditionalFilter",
+                    "config": {
+                        "condition": "${not find(request.uri.path, '/delete')}",
+                        "delegate": "company-get-session-info"
+                    }
+                },
+                {
+                    "name": "company-redis-script-filter",
+                    "type": "ScriptableFilter",
+                    "config": {
+                        "type": "application/x-groovy",
+                        "file": "RedisScriptFilter.groovy",
+                        "args": {
+                            "idcBaseUrl": "${idcBaseUrl}",
+                            "revocationClientId": "${revocationClientId}",
+                            "revocationClientSecret": "${revocationClientSecret}"
+                        }
+                    }
+                },
+                {
+                    "name": "company-replace-header-integration-session",
+                    "type": "HeaderFilter",
+                    "config": {
+                        "messageType": "REQUEST",
+                        "remove": ["Host", "Authorization"],
+                        "add": {
+                            "X-CIAM-Authorization": ["Bearer ${contexts.oauth2.accessToken.token}"],
+                            "Ocp-Apim-Subscription-Key": ["${ciamSubscriptionKey}"]
+                        }
+                    }
+                },
+                "company-security-headers"
+            ],
+            "handler": {
+                "type": "ReverseProxyHandler",
+                "config": {
+                    "tls": {
+                        "type": "ClientTlsOptions",
+                        "config": {
+                            "trustManager": {
+                                "type": "TrustAllManager"
+                            }
+                        }
+                    },
+                    "hostnameVerifier": "ALLOW_ALL"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "name": "15-invalid-session",
+    "condition": "${matchesWithRegex(request.uri.path, '^/session/invalidsession$')}",
+    "handler": {
+        "type": "StaticResponseHandler",
+        "config": {
+            "status": 401,
+            "reason": "Unauthorized",
+            "headers": {
+                "Content-Type": ["application/json"],
+                "WWW-Authenticate": [
+                    "Bearer realm=\"AM\", error=\"invalid_token\", error_description=\"The session is invalid or expired\""
+                ]
+            },
+            "entity": "{\"error\":\"invalid_session\",\"message\":\"Your session is invalid, please log in again.\"}"
+        }
+    }
+}

@@ -808,3 +808,20 @@ export AMADMIN_PASSWORD='...'
 export ADMIN_TOKEN='...'
 export CLIENT_SECRET='...'
 ```
+
+## Para obtener todos los usaurios registrados
+
+```bash
+curl -sS \
+  "http://localhost:8080/am/json/realms/root/users?_queryId=*" \
+  -H "Host: am" \
+  -H "iPlanetDirectoryPro: ${ADMIN_TOKEN}"
+```
+
+```bash
+curl -sS \
+  -H "Host: am" \
+  -H "iPlanetDirectoryPro: ${ADMIN_TOKEN}" \
+  -H "Accept-API-Version: resource=0.0" \
+  "http://localhost:8080/am/json/realms/root/realm-config/authentication/modules/ldap/ldapService"
+```
