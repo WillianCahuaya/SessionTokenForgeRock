@@ -4,17 +4,9 @@ Este documento describe el procedimiento para crear o modificar una **route de F
 
 ## 1. Crear o modificar la Route
 
-Las routes se encuentran en:
-
-```text
-docker/ig/config-profiles/cdk/config/routes-service/
-```
-
 Ejemplo:
 
-```text
 docker/ig/config-profiles/cdk/config/routes-service/00-kube.json
-```
 
 Ejemplo de una route:
 
@@ -45,15 +37,7 @@ Ejemplo de una route:
 
 En este ejemplo:
 
-```text
-GET /kube
-      ↓
-00-kube.json
-      ↓
-StaticResponseHandler
-      ↓
-HTTP 200
-```
+GET /kube => 00-kube.json => StaticResponseHandler => HTTP 200
 
 ---
 
@@ -69,9 +53,7 @@ echo "00-kube.json OK"
 
 Resultado esperado:
 
-```text
 00-kube.json OK
-```
 
 Si existe un error de sintaxis, corregirlo antes de continuar.
 
@@ -87,18 +69,12 @@ Ejecutar:
 ./bin/forgeops build ig --config-profile cdk --push-to none
 ```
 
-El proceso genera:
-
-```text
-ig:latest
-```
+El proceso genera: => ig:latest
 
 Resultado esperado al final:
 
-```text
 naming to docker.io/library/ig:latest
 Updated the image_defaulter with your new image for ig: "ig".
-```
 
 Esto significa que la nueva configuración de `routes-service` ya está incluida en la imagen.
 
@@ -114,23 +90,15 @@ Ejecutar:
 kind load docker-image ig:latest --name willca-local
 ```
 
-Resultado esperado:
-
-```text
+Resultado esperado: =>
 Image: "ig:latest" ... loading...
-```
 
 Esto copia la imagen hacia el nodo:
 
-```text
-Docker Desktop
-      ↓
-ig:latest
-      ↓
-KIND
-      ↓
+Docker Desktop =>
+ig:latest =>
+KIND =>
 willca-local-control-plane
-```
 
 ---
 
@@ -138,10 +106,8 @@ willca-local-control-plane
 
 En este laboratorio la Deployment de IG está configurada para utilizar:
 
-```text
-image: ig:latest
+image: ig:latest =>
 imagePullPolicy: IfNotPresent
-```
 
 Por lo tanto, Kubernetes puede utilizar la imagen que acabamos de cargar en KIND.
 
@@ -165,23 +131,14 @@ Observar el Pod:
 kubectl get pods -n forgerock -l app=ig -w
 ```
 
-El estado puede pasar por:
-
-```text
+El estado puede pasar por: =>
 0/1 Running
-```
 
-y finalmente:
-
-```text
+y finalmente: =>
 1/1 Running
-```
 
-Resultado esperado:
-
-```text
-ig-xxxxxxxxxx   1/1   Running   0   ...
-```
+Resultado esperado: =>
+ig-xxxxxxxxxx 1/1 Running 0 ...
 
 ---
 
@@ -202,25 +159,21 @@ grep -E "00-kube|ERROR|Unable to start"
 
 Para `00-kube` esperamos:
 
-```text
 Loaded the route with id '00-kube' registered with the name '00-kube'
-```
 
 Si aparece ese mensaje, significa que IG encontró y cargó correctamente la route.
 
 También es importante que no aparezcan errores como:
 
-```text
 ERROR
 Unable to start
 An error occurred while building the route
-```
 
 ---
 
 ## 8. Recargar la conexion Mac con Docker
 
-Como se reincio el docker, esto pierde la conexion de la maquina local con el ambiente levantado de IG
+Como se reincio el docker, esto pierde la conexion de la maquina local con el ambiente levantado de de Forge Rock
 
 Solo se debe bajar y levantar nuevamente la conexion
 
@@ -230,13 +183,9 @@ Solo se debe bajar y levantar nuevamente la conexion
 
 Como el ambiente local tiene:
 
-```text
-localhost:8081
-       ↓
-IG Service
-       ↓
+localhost:8081 =>
+IG Service =>
 IG :80
-```
 
 podemos probar:
 
@@ -244,35 +193,21 @@ podemos probar:
 curl -i http://localhost:8081/kube
 ```
 
-Resultado esperado:
-
-```text
+Resultado esperado: =>
 HTTP/1.1 200 OK
-```
 
-y en el body:
-
-```text
+y en el body: =>
 Kubernetes monitoring request, Used to disabled Logs. Your path is /kube
-```
 
-La expresión:
-
-```text
+La expresión: =>  
 ${request.uri.path}
-```
 
-debe resolverse como:
-
-```text
+debe resolverse como: =>  
 /kube
-```
 
 por lo que el resultado será similar a:
 
-```text
 Kubernetes monitoring request, Used to disabled Logs. Your path is /kube
-```
 
 ---
 
@@ -302,12 +237,4 @@ IG carga las Routes
 Verificar logs
         ↓
 Probar endpoint
-```
-
-En comandos:
-
-```bash
-# 1. Validar
-python3 -m json.tool \
-docker/ig/config-profiles/cdk/config/routes-service/00-
 ```

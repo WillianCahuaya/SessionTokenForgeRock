@@ -29,4 +29,4 @@ return next.handle(context, request).thenOnResult{ Response response ->
     }
 
     return response
-})
+}

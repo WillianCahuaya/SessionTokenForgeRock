@@ -83,8 +83,7 @@
                             "Ocp-Apim-Subscription-Key": ["${ciamSubscriptionKey}"]
                         }
                     }
-                },
-                "company-security-headers"
+                }
             ],
             "handler": {
                 "type": "ReverseProxyHandler",

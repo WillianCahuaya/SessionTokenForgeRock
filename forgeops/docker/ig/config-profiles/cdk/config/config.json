@@ -4,7 +4,7 @@
         "amPassword": "Password123!",
         "companyIgAgentUsername": "company-ig-agent",
 
-        "sessionApiBaseUrl": "http://localhost:8081/kube",
+        "sessionApiBaseUrl": "http://localhost:8082",
         "idcBaseUrl": "http://am.forgerock.svc.cluster.local/am",
 
         "revocationClientId": "ig-session-revoker",
@@ -62,7 +62,7 @@
                 "version": "7.1",
                 "agent": {
                     "username": "${companyIgAgentUsername}",
-                    "passwordSecretId": "company-ig-agent.password"
+                    "passwordSecretId": "companyIgAgent.password"
                 },
                 "secretsProvider": "amSecretsProvider",
                 "sessionCache": {
@@ -122,23 +122,6 @@
             }
         },
         {
-            "name": "company-conditional-integration-session",
-            "type": "ConditionalFilter",
-            "config": {
-                "condition": "${not find(request.uri.path, '/delete')}",
-                "delegate": "company-get-session-info"
-            }
-        },
-        {
-            "name": "company-Oauth-integration-session",
-            "type": "OAuth2ResourceServerFilter",
-            "config": {
-                "requireHttps": false,
-                "scopes": ["IG:Integration Session"],
-                "accessTokenResolver": "company-cache-access-token"
-            }
-        },
-        {
             "name": "AmService-1",
             "type": "AmService",
             "config": {
@@ -175,7 +158,7 @@
                             "_comment": "base64('password') = 'cGFzc3dvcmQ='",
                             "secrets": {
                                 "agent.password": "cGFzc3dvcmQ=",
-                                "company-ig-agent.password": "YWRtaW5pZw=="
+                                "companyIgAgent.password": "YWRtaW5pZw=="
                             }
                         }
                     }
