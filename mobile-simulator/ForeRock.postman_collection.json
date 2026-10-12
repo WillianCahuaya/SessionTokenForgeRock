@@ -1,0 +1,2870 @@
+{
+  "info": {
+    "_postman_id": "37c886cc-b0fb-439e-8b59-707af592d747",
+    "name": "ForeRock",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8112246"
+  },
+  "item": [
+    {
+      "name": "ForgeRoock Env",
+      "item": [
+        {
+          "name": "ForgeRockEnv",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const ENV = \"DEV\";\r",
+                  "const am_url = \"http://localhost:8080\";\r",
+                  "const ig_url = \"http://localhost:8081\";\r",
+                  "const client_id = \"mobile-simulator\";\r",
+                  "const client_secret = \"mobile-secret\";\r",
+                  "const username = \"testuser\";\r",
+                  "const password = \"Password123!\";\r",
+                  "const tokenA = \"123!\";\r",
+                  "const amadmin_password = \"9HKHQeCZNBL8GEx7qwkmrCpq\";\r",
+                  "const username_oauth2 = \"ig-session-revoker\";\r",
+                  "const password_oauth2 = \"adminoauth\";\r",
+                  "\r",
+                  "\r",
+                  "postman.setEnvironmentVariable(\"ENV\", ENV);\r",
+                  "postman.setEnvironmentVariable(\"am_url\", am_url);\r",
+                  "postman.setEnvironmentVariable(\"ig_url\", ig_url);\r",
+                  "postman.setEnvironmentVariable(\"client_id\", client_id);\r",
+                  "postman.setEnvironmentVariable(\"client_secret\", client_secret);\r",
+                  "postman.setEnvironmentVariable(\"username\", username);\r",
+                  "postman.setEnvironmentVariable(\"password\", password);\r",
+                  "postman.setEnvironmentVariable(\"tokenA\", tokenA);\r",
+                  "postman.setEnvironmentVariable(\"amadmin_password\", amadmin_password);\r",
+                  "postman.setEnvironmentVariable(\"username_oauth2\", username_oauth2);\r",
+                  "postman.setEnvironmentVariable(\"password_oauth2\", password_oauth2);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://www.postman-echo.com/get",
+              "protocol": "http",
+              "host": [
+                "www",
+                "postman-echo",
+                "com"
+              ],
+              "path": [
+                "get"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ForgeRock AM Auth",
+      "item": [
+        {
+          "name": "AM Generate Token ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"admin_token\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Username",
+                "value": "amadmin",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Password",
+                "value": "{{amadmin_password}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=2.0",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/authenticate",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "authenticate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=3.0",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin12345\",\n    \"userpassword\": \"admin12345\",\n    \"mail\": \"testuser@example.com\",\n    \"givenName\": \"Admin\",\n    \"sn\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/users/?_action=create",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "users",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "_action",
+                  "value": "create"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=3.0",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userpassword\": \"admin12345\"\n}"
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/users/testuser",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "users",
+                "testuser"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Find User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/users/admin12345?_fields=username,uid,inetUserStatus,givenName",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "users",
+                "admin12345"
+              ],
+              "query": [
+                {
+                  "key": "_fields",
+                  "value": "username,uid,inetUserStatus,givenName"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AM Auth User tokenId admin12345",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Username",
+                "value": "admin12345",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Password",
+                "value": "admin12345",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "resource=2.0",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/authenticate",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "authenticate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ForgeRock AM Access",
+      "item": [
+        {
+          "name": "AM Auth User tokenId testuser",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"tokenId\", pm.response.json()['tokenId']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Username",
+                "value": "{{username}}",
+                "type": "text"
+              },
+              {
+                "key": "X-OpenAM-Password",
+                "value": "{{password}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "resource=2.0",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{am_url}}/am/json/realms/root/authenticate",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "authenticate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR Auth Mobile AM AccessToken testuser",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"access_token\", pm.response.json()['access_token']);\r",
+                  "pm.environment.set(\"refresh_token\", pm.response.json()['refresh_token']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                },
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "employeenumber mail",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "auth_chain",
+                  "value": "ldapService",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "IG:Integration",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{am_url}}/am/oauth2/access_token",
+              "host": [
+                "{{am_url}}"
+              ],
+              "path": [
+                "am",
+                "oauth2",
+                "access_token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AM Valid Token",
+      "item": [
+        {
+          "name": "Session Info",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "resource=4.0, protocol=1.0",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{tokenId}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{access_token}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/sessions/?_action=getSessionInfo",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "sessions",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "_action",
+                  "value": "getSessionInfo"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ForgeRock IG",
+      "item": [
+        {
+          "name": "IG route 00 StaticResponseHandler kube",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ig_url}}/kube",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "kube"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 00 StaticResponseStatic health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ig_url}}/kube",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "kube"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 00 StaticResponseStatic demo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ig_url}}/demo?test=true",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "demo"
+              ],
+              "query": [
+                {
+                  "key": "test",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 03 Token Introspect - accessToken",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{ig_url}}/rs-tokenintrospect",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "rs-tokenintrospect"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 03 Token Introspect - tokenId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{tokenId}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{tokenId}}",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{tokenId}}",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{ig_url}}/rs-tokenintrospect",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "rs-tokenintrospect"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 04 Token Exchange",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{ig_url}}/token/exchange",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "token",
+                "exchange"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 15 StaticResponseStatic InvalidaSession",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ig_url}}/session/invalidsession",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "session",
+                "invalidsession"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 16 Integration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ig_url}}/integration-session/ciam/session/v1/register",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "integration-session",
+                "ciam",
+                "session",
+                "v1",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "IG queries validation",
+      "item": [
+        {
+          "name": "IG route UpdateIGAgent Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept-API-Version",
+                "value": "resource=2.0",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userpassword\": \"adminig\",\n    \"status\": {\n        \"inherited\": false,\n        \"value\": \"Active\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/IdentityGatewayAgent/company-ig-agent",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "IdentityGatewayAgent",
+                "company-ig-agent"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Test Health live",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/am/json/health/live",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "health",
+                "live"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Test Basic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/am",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Server Info",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/serverinfo/*",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "serverinfo",
+                "*"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Oauth2 client existentes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/OAuth2Client?_queryFilter=true",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "OAuth2Client"
+              ],
+              "query": [
+                {
+                  "key": "_queryFilter",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Oauth2 client mobile simulator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/OAuth2Client/mobile-simulator",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "OAuth2Client",
+                "mobile-simulator"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Oauth2 client mobile simulator scope",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"com.forgerock.openam.oauth2provider.loopback.interface.redirection\": false,\n  \"com.forgerock.openam.oauth2provider.defaultScopes\": [\n    \"cn\",\n    \"profile\"\n  ],\n  \"com.forgerock.openam.oauth2provider.refreshTokenLifeTime\": 604800,\n  \"com.forgerock.openam.oauth2provider.scopes\": [\n    \"profile\",\n    \"mail\",\n    \"employeenumber\",\n    \"name\",\n    \"cn\",\n    \"fr:idm:*\",\n    \"IG:Integration\",\n    \"AM:Integration\"\n  ],\n  \"com.forgerock.openam.oauth2provider.accessTokenLifeTime\": 3600,\n  \"com.forgerock.openam.oauth2provider.redirectionURIs\": [\n    \"http://fake.com\",\n    \"https://fake.com\"\n  ],\n  \"com.forgerock.openam.oauth2provider.clientName\": [\n    \"Mobile Simulator\"\n  ],\n  \"com.forgerock.openam.oauth2provider.clientType\": \"Confidential\",\n  \"com.forgerock.openam.oauth2provider.authorizationCodeLifeTime\": 120,\n  \"com.forgerock.openam.oauth2provider.description\": [\n    \"Mobile simulator for Token A\"\n  ],\n  \"com.forgerock.openam.oauth2provider.subjectType\": \"public\",\n  \"com.forgerock.openam.oauth2provider.tokenEndPointAuthMethod\": \"client_secret_basic\",\n  \"com.forgerock.openam.oauth2provider.grantTypes\": [\n    \"authorization_code\",\n    \"password\",\n    \"implicit\",\n    \"refresh_token\",\n    \"client_credentials\"\n  ],\n  \"com.forgerock.openam.oauth2provider.responseTypes\": [\n    \"code\",\n    \"token\",\n    \"id_token\",\n    \"code token\",\n    \"token id_token\",\n    \"code id_token\",\n    \"code token id_token\",\n    \"device_code\",\n    \"device_code id_token\"\n  ],\n  \"isConsentImplied\": false,\n  \"idTokenEncryptionEnabled\": false,\n  \"tokenEncryptionEnabled\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/OAuth2Client/mobile-simulator",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "OAuth2Client",
+                "mobile-simulator"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM ig-session-revoker",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coreOAuth2ClientConfig\": {\n    \"userpassword\": \"adminoauth\",\n    \"clientType\": \"Confidential\",\n    \"status\": \"Active\",\n    \"redirectionUris\": [],\n    \"scopes\": [],\n    \"defaultScopes\": []\n  },\n  \"advancedOAuth2ClientConfig\": {\n    \"tokenEndpointAuthMethod\": \"client_secret_basic\",\n    \"grantTypes\": [\n      \"client_credentials\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/OAuth2Client/ig-session-revoker",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "OAuth2Client",
+                "ig-session-revoker"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM ig-session-revoker config scopes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coreOAuth2ClientConfig\": {\n    \"userpassword\": \"adminoauth\",\n    \"clientType\": \"Confidential\",\n    \"status\": \"Active\",\n    \"redirectionUris\": [],\n    \"scopes\": [\n      \"am-introspect-all-tokens\"\n    ],\n    \"defaultScopes\": []\n  },\n  \"advancedOAuth2ClientConfig\": {\n    \"tokenEndpointAuthMethod\": \"client_secret_basic\",\n    \"grantTypes\": [\n      \"client_credentials\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/OAuth2Client/ig-session-revoker",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "OAuth2Client",
+                "ig-session-revoker"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM ig-session-revoker view config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/OAuth2Client/ig-session-revoker",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "OAuth2Client",
+                "ig-session-revoker"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM ig-session-revoker services",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/services?_queryFilter=true",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "services"
+              ],
+              "query": [
+                {
+                  "key": "_queryFilter",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM ig-session-revoker serivce oidc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/services/oauth-oidc",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "services",
+                "oauth-oidc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM ig-session-revoker idm provisioning",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-API-Version",
+                "value": "protocol=2.1,resource=1.0",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "iPlanetDirectoryPro",
+                "value": "{{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/am/json/realms/root/realm-config/agents/OAuth2Client/idm-provisioning",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "json",
+                "realms",
+                "root",
+                "realm-config",
+                "agents",
+                "OAuth2Client",
+                "idm-provisioning"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "TokenRevoke",
+      "item": [
+        {
+          "name": "IG route AM Oauth AccessToken",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"access_token_oauth\", pm.response.json()['access_token']);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "password",
+                  "value": "{{password_oauth2}}",
+                  "type": "string"
+                },
+                {
+                  "key": "username",
+                  "value": "{{username_oauth2}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials",
+                  "type": "text",
+                  "uuid": "1c005f4b-3903-4c66-b43b-14a324a0ac08"
+                },
+                {
+                  "key": "scope",
+                  "value": "am-introspect-all-tokens",
+                  "type": "text",
+                  "uuid": "18d4ad95-68ad-4a59-8916-e3a23ca1f82e"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/am/oauth2/realms/root/access_token",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "oauth2",
+                "realms",
+                "root",
+                "access_token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Oauth AccessToken Revoke",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "password",
+                  "value": "{{password_oauth2}}",
+                  "type": "string"
+                },
+                {
+                  "key": "username",
+                  "value": "{{username_oauth2}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "text",
+                  "uuid": "1c005f4b-3903-4c66-b43b-14a324a0ac08"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/am/oauth2/realms/root/token/revoke",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "oauth2",
+                "realms",
+                "root",
+                "token",
+                "revoke"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route AM Oauth Test Introspect",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "password",
+                  "value": "{{password_oauth2}}",
+                  "type": "string"
+                },
+                {
+                  "key": "username",
+                  "value": "{{username_oauth2}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "text",
+                  "uuid": "1c005f4b-3903-4c66-b43b-14a324a0ac08"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/am/oauth2/realms/root/introspect",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "am",
+                "oauth2",
+                "realms",
+                "root",
+                "introspect"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "CiamApi",
+      "item": [
+        {
+          "name": "Ciam Hello",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8082/hello",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "hello"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ciam health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8082/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ciam Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CIAM-Authorization",
+                "value": "{{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Host",
+                "value": "am",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/ciam/session/v1/register?X-CIAM-Authorization",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "ciam",
+                "session",
+                "v1",
+                "register"
+              ],
+              "query": [
+                {
+                  "key": "X-CIAM-Authorization",
+                  "value": null,
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ciam Delete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8082/ciam/session/v1/delete",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8082",
+              "path": [
+                "ciam",
+                "session",
+                "v1",
+                "delete"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "IG Test Token Integration",
+      "item": [
+        {
+          "name": "IG route 16 Integration - 401 - sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{ig_url}}/integration-session/ciam/session/v1/register",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "integration-session",
+                "ciam",
+                "session",
+                "v1",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 16 Integration - 401 - Token Invalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "token-invalido",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{ig_url}}/integration-session/ciam/session/v1/register",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "integration-session",
+                "ciam",
+                "session",
+                "v1",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 16 Integration - Register - Token valido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "cookie",
+                "value": "iPlanetDirectoryPro={{tokenId}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{ig_url}}/integration-session/ciam/session/v1/register",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "integration-session",
+                "ciam",
+                "session",
+                "v1",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "IG route 16 Integration - Delete - Token valido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "cookie",
+                "value": "iPlanetDirectoryPro={{tokenId}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{ig_url}}/integration-session/ciam/session/v1/delete",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "integration-session",
+                "ciam",
+                "session",
+                "v1",
+                "delete"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "InternalToken",
+      "item": [
+        {
+          "name": "IG route 17 Integration - New token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "cookie",
+                "value": "iPlanetDirectoryPro={{tokenId}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{ig_url}}/integration-session/ciam/session/v1/register",
+              "host": [
+                "{{ig_url}}"
+              ],
+              "path": [
+                "integration-session",
+                "ciam",
+                "session",
+                "v1",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

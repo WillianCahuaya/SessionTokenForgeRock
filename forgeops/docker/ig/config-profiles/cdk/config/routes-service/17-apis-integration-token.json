@@ -2,15 +2,6 @@
     "name": "17-apis-integration-token",
     "condition": "${find(request.uri.path, '^/integration-token')}",
     "baseURI": "${sessionApiBaseUrl}",
-    "heap": [
-        {
-            "name": "company-get-session-info",
-            "type": "SessionInfoFilter",
-            "config": {
-                "amService": "company-am-service"
-            }
-        }
-    ],
     "handler": {
         "type": "Chain",
         "config": {
@@ -39,20 +30,7 @@
                         "type": "application/x-groovy",
                         "file": "InternalTokenFilter.groovy"
                     }
-                },
-                {
-                    "name": "company-replace-header-integration-token",
-                    "type": "HeaderFilter",
-                    "config": {
-                        "messageType": "REQUEST",
-                        "remove": ["Host", "Authorization"],
-                        "add": {
-                            "X-CIAM-Authorization": ["Bearer ${contexts.oauth2.accessToken.token}"],
-                            "Ocp-Apim-Subscription-Key": ["${ciamSubscriptionKey}"]
-                        }
-                    }
-                },
-                "company-security-headers"
+                }
             ],
             "handler": {
                 "type": "ReverseProxyHandler",

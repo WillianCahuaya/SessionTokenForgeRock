@@ -10,7 +10,6 @@ import java.util.Base64
 logger.info("INTERNAL_TOKEN_FILTER: initializing...")
 
 String privateKeyPath = "/var/ig/secrets/jwt-private.pem"
-logger.info("INTERNAL_TOKEN_FILTER: key cargado correctamente desde: {}", privateKeyPath)
 
 def generateInternalToken = { String userId ->
 
@@ -23,7 +22,6 @@ def generateInternalToken = { String userId ->
         .replaceAll("\\s", "")
 
     byte[] keyBytes = Base64.decoder.decode(privateKeyContent)
-    logger.info("INTERNAL_TOKEN_FILTER: Bytes leidos correctamente..");
 
     def keySpec = new PKCS8EncodedKeySpec(keyBytes)
     def privateKey = KeyFactory.getInstance("RSA").generatePrivate(keySpec)
@@ -58,7 +56,6 @@ def generateInternalToken = { String userId ->
     signer.update(signingInput.getBytes("UTF-8"))
 
     String signature = encoder.encodeToString(signer.sign())
-    logger.info("INTERNAL_TOKEN_FILTER: Signature generada correctamente");
 
     return signingInput + "." + signature
 }
@@ -66,12 +63,11 @@ def generateInternalToken = { String userId ->
 try {
     String internalToken = generateInternalToken("user123")
     request.getHeaders().put("X-Internal-Authorization", "Bearer " + internalToken)
-    logger.info("INTERNAL_TOKEN_FILTER: Cabecera X-Internal-Authorization agregada token: {}", internalToken)
+    logger.info("INTERNAL_TOKEN_FILTER: Cabecera X-Internal-Authorization agregada")
 } catch (Exception e) {
     logger.error("INTERNAL_TOKEN_FILTER: Error al agregar la cabecera", e)
     throw e
 }
-
 
 return next.handle(context, request).then { response ->
     logger.info("INTERNAL_TOKEN_FILTER: Response status = {}", response.status)
