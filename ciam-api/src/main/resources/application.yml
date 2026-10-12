@@ -1,0 +1,13 @@
+greeting:
+  message: "hello"
+
+quarkus:
+  application:
+    name: ciam-api
+  http:
+    host: 0.0.0.0
+    port: 8082
+  log:
+    category:
+      "com.willca.ciam":
+        level: INFO

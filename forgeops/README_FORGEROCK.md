@@ -5,236 +5,166 @@
 El objetivo es levantar un entorno ForgeRock local para poder estudiar y probar este flujo:
 
 ```text
-Mobile Simulator
-      │
-      ▼
-     AM
-      │
-      │ Token A
-      ▼
-     IG
-      │
-      │ Token B
-      ▼
-   Backend
+             🏢 FORGEROCK LAB
+                     │
+                     ▼
+          1️⃣ 🗄️ DS — Directory Services
+                     │
+             ┌───────┴───────┐
+             ▼               ▼
+       👤 DS — IdRepo    🗄️ DS — CTS
+          Identidades       Sesiones y tokens
+             │               │
+             └───────┬───────┘
+                     ▼
+          2️⃣ 🔐 AM — Access Management
+             Autenticación, OAuth 2.0, sesiones y tokens
+                     ▲
+                     │
+                     │ configuración
+                     │
+          3️⃣ ⚙️ Amster (tarea inicial)
+                     │ Configura AM y termina
+                     │
+                     ▼
+          4️⃣ 🚪 IG — Identity Gateway
+             Rutas, filtros y validación
+                     │
+                     ▼
+               🌐 CIAM API
+                     │
+                     ▼
+          🧩 Servicios de negocio
+
 ```
 
-En la primera etapa solamente queremos conseguir:
+## 🏢 ForgeRock Lab: el entorno completo.
 
-```text
-Mobile Simulator
-      ↓
-AM
-      ↓
-Token A
-      ↓
-TTL ≈ 1 hora
-```
+### 🚪 IG(Identity Gateway):
 
-La segunda etapa será:
+Función: actuar como puerta de entrada entre los clientes y las API internas.
 
-```text
-Token A
-   ↓
-IG
-   ↓
-Token B
-   ↓
-TTL = 1 minuto
-```
+- Recibe peticiones HTTP/HTTPS.
+- Ejecuta rutas y filtros para validar, transformar o bloquear peticiones.
+- Puede validar tokens y consultar AM cuando la configuración lo requiere.
+- Reenvía las peticiones al servicio de destino.
+
+¿Debe permanecer ejecutándose? Sí, mientras deba atender peticiones.
+
+En tu laboratorio: la ruta 16-apis-integration-session procesa las solicitudes de registro y eliminación de sesiones.
+
+### 🔐 AM(Access Management):
+
+Función: gestionar la autenticación y el acceso de usuarios y aplicaciones.
+
+- Autentica usuarios.
+- Gestiona sesiones SSO.
+- Emite tokens OAuth 2.0 y puede proporcionar funciones de OpenID Connect.
+- Permite configurar clientes, scopes y políticas de acceso.
+- Expone servicios para consultar o validar tokens, según el flujo.
+
+¿Debe permanecer ejecutándose? Sí, para atender las operaciones de identidad y acceso que dependen de él.
+
+En tu laboratorio: IG utiliza AmService para comunicarse con AM.
+
+### 👤 DS IdRepo (Disrectory Service Identity Repository):
+
+Función: proporcionar el repositorio de identidades que AM utiliza para consultar datos de usuarios.
+
+- Almacena identidades y atributos.
+- Permite buscar y consultar usuarios.
+- Proporciona información de identidad a AM.
+
+¿Debe permanecer ejecutándose? Sí, mientras AM dependa de ese directorio para las operaciones correspondientes.
+
+En tu laboratorio: corresponde al pod ds-idrepo-0.
+
+### 🗄️ DS CTS (Directory Service Core Token Service):
+
+Función: almacenar información de estado de sesiones y tokens que AM necesita mantener.
+
+- Conserva datos asociados a sesiones.
+- Puede almacenar información de tokens y otros estados gestionados por AM.
+- Permite que AM consulte ese estado cuando lo necesita.
+
+¿Debe permanecer ejecutándose? Sí, si AM está configurado para depender de CTS durante las operaciones que realizas.
+
+En tu laboratorio: corresponde al pod ds-cts-0.
+
+### ⚙️ Amster:
+
+Función: automatizar la administración de la configuración de AM.
+
+- Importa configuraciones previamente preparadas.
+- Exporta configuraciones para respaldarlas o reutilizarlas.
+- Facilita repetir despliegues en diferentes entornos.
+
+¿Debe permanecer ejecutándose? Generalmente, no.
+
+Amster puede ejecutarse durante la instalación o una tarea de configuración y finalizar cuando termina. La configuración que importó queda almacenada en AM; no depende de que Amster permanezca activo. Si necesitas cambiar o importar configuración de nuevo, puedes volver a ejecutarlo.
+
+En tu laboratorio: el pod amster-g622w aparece como Completed, algo normal si ejecutó una tarea de inicialización y terminó correctamente.
+
+#### 🌐 CIAM API (Customer Identity and Access Management API):
+
+Función: exponer operaciones de identidad a los sistemas que las necesitan.
+
+- Recibe peticiones de registro o eliminación de sesiones, según su implementación.
+- Ejecuta la lógica definida por la aplicación.
+- Puede comunicarse con otros sistemas o servicios internos.
+
+¿Debe permanecer ejecutándose? Sí, mientras IG necesite invocar esa API.
+
+En tu laboratorio: corresponde al pod ciam-api-66f5f48c49-kjgzq.
 
 ---
 
-# 2. Arquitectura del laboratorio
+## 2. Arquitectura del laboratorio
 
 Nuestro entorno local tiene varias capas:
 
 ```text
-Mac
-│
-├── Docker Desktop
-│
-├── KIND
-│    └── Kubernetes cluster
-│
-└── Git repository
-     └── ForgeOps
-          │
-          └── Kubernetes
-               │
-               └── namespace: forgerock
-                    │
-                    ├── DS IDRepo
-                    ├── DS CTS
-                    ├── AM
-                    ├── AMster
-                    └── IG
-```
-
-### ¿Qué es cada componente?
-
-**Docker**
-
-Es el runtime de contenedores que utilizamos en el Mac.
-
-**KIND**
-
-Kubernetes IN Docker. Crea nodos Kubernetes como contenedores Docker. KIND genera el contexto de Kubernetes que luego utilizamos con `kubectl`.
-
-**ForgeOps**
-
-Es el repositorio que contiene Dockerfiles, configuración, scripts, Kustomize y demás artefactos necesarios para desplegar y personalizar la plataforma Ping Identity sobre Kubernetes.
-
-**AM**
-
-Access Management. Gestiona autenticación, OAuth2/OIDC, sesiones y emisión de tokens.
-
-**DS**
-
-Directory Services. Es la capa de directorio utilizada por la plataforma.
-
-**AMster**
-
-Importa configuraciones de AM desde los archivos de ForgeOps.
-
-**IG**
-
-Identity Gateway. Es un servidor/gateway que recibe peticiones HTTP y las procesa mediante routes, filters y handlers.
-
----
-
-# 3. Requisitos del equipo
-
-Para este laboratorio utilizamos:
-
-```text
-Mac
-Docker Desktop
-Git
-kubectl
-KIND
-ForgeOps
-```
-
-ForgeOps documenta como referencia para entornos locales una VM/engine Docker con al menos 4 CPUs, 10 GB de RAM y 60 GB de disco. Aunque la documentación oficial utiliza Minikube para el ejemplo local, esos recursos son una buena referencia para un laboratorio con KIND también.
-
-Esto es especialmente importante porque durante nuestro laboratorio AMster llegó a quedarse:
-
-```text
-Pending
-```
-
-debido a:
-
-```text
-Insufficient memory
+                💻 MACBOOK — HOST LOCAL
+                           │
+         ┌─────────────────┼────────────────┐
+         │                 │                │
+         ▼                 ▼                ▼
+   📦 Git            🐳 Docker       ⌨️ Terminal
+   Versionamiento       Desktop           Shell
+         │                 │                │
+         ▼                 ▼                ▼
+📂 Repositorio     🧱 Contenedores   Comandos CLI
+forgeops                   │                │
+                           ▼                ├── kubectl
+                     ☸️ kind                │   Cliente Kubernetes
+                      Clúster local         │
+                           │                ├── git
+                           ▼                └── docker
+                     ☸️ Kubernetes
+                           │
+                           ├── Namespace: forgerock
+                           │
+                           ├── 🗄️ DS — IdRepo
+                           ├── 🗄️ DS — CTS
+                           ├── 🔐 AM
+                           ├── 🚪 IG
+                           ├── ⚙️ Amster (tarea)
+                           └── 🌐 CIAM API
 ```
 
 ---
 
-# 4. Docker Desktop
+### Requisitos del equipo
 
-En macOS necesitamos tener Docker ejecutándose.
-
-### Verificación
-
-```bash
-docker version
-docker info
-```
-
-### Resultado esperado
-
-Docker debe responder correctamente y mostrar información del Engine.
-
-Por ejemplo:
-
-```text
-Client:
- Version: ...
-
-Server:
- Engine:
-   Version: ...
-```
-
-Si Docker no está levantado, KIND y las imágenes de ForgeRock no podrán funcionar.
+ForgeOps documenta como referencia para entornos locales una VM/engine Docker con al menos 4 CPUs, 12 GB de RAM y 60 GB de disco. Aunque la documentación oficial utiliza Minikube para el ejemplo local, esos recursos son una buena referencia para un laboratorio con KIND también.
 
 ---
 
-# 5. Instalar Git
+## 3. Configurar ambiente
 
-Git será utilizado para descargar ForgeOps.
+### Crear el cluster KIND
 
-### Verificación
-
-```bash
-git --version
-```
-
-Resultado esperado:
-
-```text
-git version ...
-```
-
----
-
-# 6. Instalar kubectl
-
-`kubectl` es el cliente que nos permite comunicarnos con Kubernetes.
-
-### Verificación
-
-```bash
-kubectl version --client
-```
-
-Debe devolver la versión del cliente.
-
-ForgeOps 7.5 documenta `kubectl` como uno de los requisitos del entorno.
-
----
-
-# 7. Instalar KIND
-
-KIND crea el clúster Kubernetes local utilizando Docker.
-
-En macOS puede instalarse con Homebrew:
-
-```bash
-brew install kind
-```
-
-### Verificación
-
-```bash
-kind version
-```
-
-Guardar este valor es importante para documentar exactamente qué versión se utilizó.
-
-KIND oficialmente recomienda verificar la versión instalada y permite crear el cluster con:
-
-```bash
-kind create cluster
-```
-
-o con un nombre específico mediante:
-
-```bash
-kind create cluster --name <nombre>
-```
-
----
-
-# 8. Crear el cluster KIND
-
-Nuestro laboratorio utiliza el nombre:
-
-```text
-willca-local
-```
+Nuestro laboratorio utiliza el nombre: willca-local
 
 Crear el cluster:
 
@@ -243,7 +173,6 @@ kind create cluster --name willca-local
 ```
 
 KIND crea el nodo Kubernetes como un contenedor Docker.
-
 Conceptualmente:
 
 ```text
@@ -260,40 +189,21 @@ Docker
 kind get clusters
 ```
 
-Resultado esperado:
-
-```text
-willca-local
-```
-
-### Verificación Kubernetes
+Verificación Kubernetes
 
 ```bash
 kubectl cluster-info
 ```
 
-### Verificación del nodo
+Verificación del nodo
 
 ```bash
 kubectl get nodes
 ```
 
-Resultado esperado:
-
-```text
-NAME                        STATUS   ROLES
-willca-local-control-plane  Ready    control-plane
-```
-
-El estado importante es:
-
-```text
-Ready
-```
-
 ---
 
-# 9. Entender el contexto Kubernetes
+### Entender el contexto Kubernetes
 
 KIND crea y configura automáticamente un contexto para `kubectl`.
 
@@ -303,51 +213,22 @@ Comprobarlo:
 kubectl config get-contexts
 ```
 
-Debemos poder ver un contexto parecido a:
-
-```text
-kind-willca-local
-```
-
 Comprobar el contexto actual:
 
 ```bash
 kubectl config current-context
 ```
 
-Resultado esperado:
-
-```text
-kind-willca-local
-```
-
-Esto significa:
-
-```text
-kubectl
-   ↓
-KIND willca-local
-   ↓
-Kubernetes
-```
-
 ---
 
-# 10. Descargar ForgeOps desde GitHub
+### Descargar ForgeOps desde GitHub
 
 ForgeOps es el repositorio que utilizamos para obtener las configuraciones y scripts de la plataforma.
-
-La documentación oficial de ForgeOps 7.5 indica clonar el repositorio público `forgeops` y trabajar sobre una rama release de la familia 7.5. La documentación actual de 7.5 utiliza `release/7.5-20251119` como referencia.
 
 Clonar:
 
 ```bash
 git clone https://github.com/ForgeRock/forgeops.git
-```
-
-Entrar:
-
-```bash
 cd forgeops
 ```
 
@@ -357,62 +238,17 @@ Para reproducir el laboratorio sobre la versión de ForgeOps 7.5 documentada:
 git checkout release/7.5-20251119
 ```
 
-### Verificación
-
-```bash
-git branch --show-current
-```
-
-Y:
-
-```bash
-git status
-```
-
-Debemos saber exactamente qué branch estamos utilizando.
-
-> Nota: el repositorio puede cambiar con el tiempo. Para una reproducción exacta del laboratorio conviene guardar también el commit:
-
-```bash
-git rev-parse HEAD
-```
-
 ---
 
-# 11. Verificar la estructura de ForgeOps
+### Verificar la estructura de ForgeOps
 
-### Aqui previamente se creo un repo personalizado llamado:
+Aqui previamente se creo un repo personalizado llamado para guardar los modificado y levantado en el ambiente
 
 https://github.com/WillianCahuaya/SessionTokenForgeRock
 
-Desde:
-
-```text
-SessionTokenForgeRock/forgeops
-```
-
-podemos ver:
-
-```bash
-ls
-```
-
-ForgeOps contiene directorios como:
-
-```text
-bin/
-docker/
-kustomize/
-config/
-docs/
-...
-```
-
-La documentación oficial describe el repositorio como una combinación de Dockerfiles, configuraciones, perfiles, Kustomize, Helm y scripts de despliegue.
-
 ---
 
-# 12. Preparar el namespace de ForgeRock
+### Preparar el namespace de ForgeRock
 
 Creamos:
 
@@ -426,12 +262,6 @@ Verificar:
 kubectl get namespaces
 ```
 
-Debe aparecer:
-
-```text
-forgerock
-```
-
 También podemos verificar:
 
 ```bash
@@ -440,7 +270,7 @@ kubectl get pods -n forgerock
 
 ---
 
-# 13. Desplegar ForgeRock
+### Desplegar ForgeRock
 
 ForgeOps proporciona el comando `forgeops install` para generar y desplegar los manifests de Kubernetes. La documentación indica que el comando utiliza Kustomize para instalar los componentes.
 
@@ -457,7 +287,7 @@ IG
 
 ---
 
-# 14. Verificar los Pods
+### Verificar los Pods
 
 El comando que usamos constantemente es:
 
@@ -475,32 +305,6 @@ ds-idrepo-0                 1/1   Running
 ig-xxxxx                    1/1   Running
 ldif-importer-xxxxx         0/1   Completed
 ```
-
-### Cómo interpretar `STATUS`
-
-```text
-Running
-```
-
-El proceso está ejecutándose.
-
-```text
-Completed
-```
-
-El Job terminó correctamente.
-
-```text
-Pending
-```
-
-Kubernetes todavía no pudo ejecutar el Pod.
-
-```text
-CrashLoopBackOff
-```
-
-El contenedor está arrancando y fallando repetidamente.
 
 ---
 
@@ -527,116 +331,23 @@ Insufficient memory
 
 Esto significa que Kubernetes quería colocar el Pod en el nodo, pero no existía memoria suficiente.
 
-### Por qué ocurrió
-
-Nuestro nodo KIND ya estaba ejecutando:
-
-```text
-AM
-DS CTS
-DS IDRepo
-IG
-```
-
-y AMster necesitaba memoria adicional.
-
-### Solución temporal utilizada
-
-Reducimos temporalmente IG:
-
-```bash
-kubectl scale deployment ig -n forgerock --replicas=0
-```
-
-Esperamos:
-
-```bash
-kubectl get pods -n forgerock
-```
-
-Después comprobamos AMster:
-
-```bash
-kubectl get pods -n forgerock -l job-name=amster
-```
-
-Cuando terminó:
-
-```text
-amster-xxxxx   0/1   Completed
-```
-
-levantamos nuevamente IG:
-
-```bash
-kubectl scale deployment ig -n forgerock --replicas=1
-```
-
-Después:
-
-```bash
-kubectl get pods -n forgerock
-```
-
-y esperamos:
-
-```text
-ig-xxxxx   1/1   Running
-```
-
 ---
 
-# 16. AMster
-
-AMster importa configuraciones almacenadas en el repositorio.
-
-Por ejemplo:
-
-```text
-docker/amster/config-profiles/cdk/config/
-```
-
-Contiene configuraciones de AM como:
-
-```text
-OAuth2Clients/
-Applications/
-...
-```
-
-Para ejecutar la importación:
+### AMster para ejecutar la importación:
 
 ```bash
 ./bin/forgeops install amster
 ```
 
-### Verificación
+Verificación
 
 ```bash
 kubectl get pods -n forgerock -l job-name=amster
 ```
 
-Resultado:
-
-```text
-amster-xxxxx   0/1   Completed
-```
-
-Esto significa:
-
-```text
-JSON del repositorio
-       ↓
-     AMster
-       ↓
- configuración importada
-       ↓
-      AM
-```
-
 ---
 
-# 17. Verificar AM Service
+### Verificar AM Service
 
 Consultar:
 
@@ -644,41 +355,15 @@ Consultar:
 kubectl get svc am -n forgerock
 ```
 
-Nuestro resultado fue un Service de tipo:
-
-```text
-ClusterIP
-```
-
-Por ejemplo:
-
-```text
-NAME   TYPE       CLUSTER-IP      PORT(S)
-am     ClusterIP  10.96.xxx.xxx   80/TCP
-```
-
-`ClusterIP` significa que AM está accesible dentro de Kubernetes.
-
 Desde el Mac utilizamos:
 
 ```bash
 kubectl port-forward svc/am 8080:80 -n forgerock
 ```
 
-Ahora:
-
-```text
-Mac
-localhost:8080
-      ↓
-Kubernetes Service am
-      ↓
-AM :80
-```
-
 ---
 
-# 18. Problema de FQDN de AM
+### Problema de FQDN de AM
 
 AM no acepta `localhost` como FQDN válido en determinadas operaciones.
 
@@ -728,45 +413,6 @@ am
 ```
 
 Esto satisface la validación de FQDN de AM.
-
----
-
-# 19. Verificar OAuth2 de AM
-
-Descubrimos el endpoint OAuth2 real mediante OpenID Connect Discovery:
-
-```bash
-curl -i \
-  -H "Host: am" \
-  http://localhost:8080/am/oauth2/realms/root/.well-known/openid-configuration
-```
-
-La respuesta fue:
-
-```text
-HTTP 200
-```
-
-y nos mostró:
-
-```text
-token_endpoint:
-https://forgerock.iam.example.com/am/oauth2/access_token
-```
-
-Por lo tanto nuestro laboratorio utiliza:
-
-```text
-/am/oauth2/access_token
-```
-
-y no:
-
-```text
-/am/oauth2/realms/root/access_token
-```
-
-Este paso es importante porque **siempre conviene descubrir el endpoint publicado por AM en lugar de asumirlo**.
 
 ---
 

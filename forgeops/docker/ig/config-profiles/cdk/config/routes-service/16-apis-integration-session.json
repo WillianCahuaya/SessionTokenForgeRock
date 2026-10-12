@@ -7,8 +7,7 @@
             "name": "company-get-session-info",
             "type": "SessionInfoFilter",
             "config": {
-                "amService": "company-am-service",
-                "ssoToken": "${contexts.oauth2.accessToken.info.sessionCookie}"
+                "amService": "company-am-service"
             }
         }
     ],
@@ -39,7 +38,7 @@
                     "type": "OAuth2ResourceServerFilter",
                     "config": {
                         "requireHttps": false,
-                        "scopes": ["IG:Integration Session"],
+                        "scopes": ["IG:Integration"],
                         "accessTokenResolver": "company-cache-access-token"
                     }
                 },
@@ -66,9 +65,9 @@
                         "type": "application/x-groovy",
                         "file": "RedisScriptFilter.groovy",
                         "args": {
-                            "idcBaseUrl": "${idcBaseUrl}",
-                            "revocationClientId": "${revocationClientId}",
-                            "revocationClientSecret": "${revocationClientSecret}"
+                            "configuredIdcBaseUrl": "${idcBaseUrl}",
+                            "configuredRevocationClientId": "${revocationClientId}",
+                            "configuredRevocationClientSecret": "${revocationClientSecret}"
                         }
                     }
                 },
@@ -83,7 +82,8 @@
                             "Ocp-Apim-Subscription-Key": ["${ciamSubscriptionKey}"]
                         }
                     }
-                }
+                },
+                "company-security-headers"
             ],
             "handler": {
                 "type": "ReverseProxyHandler",

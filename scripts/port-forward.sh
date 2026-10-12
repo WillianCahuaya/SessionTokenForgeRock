@@ -10,6 +10,9 @@ AM_PID=$!
 kubectl port-forward svc/ig 8081:80 -n forgerock &
 IG_PID=$!
 
+kubectl port-forward svc/ciam-api 8082:8082 -n forgerock &
+CIAM_PID=$!
+
 cleanup() {
   echo
   echo "Stopping port-forwards..."
@@ -21,6 +24,7 @@ trap cleanup INT TERM EXIT
 echo
 echo "AM: http://localhost:8080  -> svc/am:80"
 echo "IG: http://localhost:8081  -> svc/ig:80"
+echo "CIAM: http://localhost:8082  -> svc/ciam-api:80"
 echo
 echo "Press Ctrl+C to stop both."
 echo

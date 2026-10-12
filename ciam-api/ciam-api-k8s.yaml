@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ciam-api
+  namespace: forgerock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ciam-api
+  template:
+    metadata:
+      labels:
+        app: ciam-api
+    spec:
+      containers:
+        - name: ciam-api
+          image: ciam-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+          env:
+            - name: QUARKUS_HTTP_HOST
+              value: "0.0.0.0"
+            - name: QUARKUS_HTTP_PORT
+              value: "8082"
+            - name: QUARKUS_HTTP_ROOT_PATH
+              value: "/kube"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ciam-api
+  namespace: forgerock
+spec:
+  type: ClusterIP
+  selector:
+    app: ciam-api
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP

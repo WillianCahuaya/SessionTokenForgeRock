@@ -78,7 +78,7 @@
       "defaultScopes" : [ "cn", "profile" ],
       "clientName" : [ "Mobile Simulator" ],
       "clientType" : "Confidential",
-      "scopes" : [ "profile", "mail", "employeenumber", "name", "cn", "fr:idm:*" ],
+      "scopes" : [ "profile", "mail", "employeenumber", "name", "cn", "fr:idm:*", "AM:Integration Session", "IG:Integration Session" ],
       "agentgroup" : null,
       "refreshTokenLifetime" : 604800,
       "redirectionUris" : [ "http://fake.com", "https://fake.com" ],
