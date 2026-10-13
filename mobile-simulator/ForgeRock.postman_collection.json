@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "37c886cc-b0fb-439e-8b59-707af592d747",
-    "name": "ForeRock",
+    "name": "ForgeRock",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "8112246"
   },
@@ -2860,6 +2860,734 @@
                 "v1",
                 "register"
               ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ChangeCode",
+      "item": [
+        {
+          "name": "InternalToeknFilter.groovy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "import groovy.json.JsonOutput",
+                  "",
+                  "import java.nio.file.Files",
+                  "import java.nio.file.Paths",
+                  "import java.security.KeyFactory",
+                  "import java.security.Signature",
+                  "import java.security.spec.PKCS8EncodedKeySpec",
+                  "import java.util.Base64",
+                  "",
+                  "logger.info(\"INTERNAL_TOKEN_FILTER: initializing...\")",
+                  "",
+                  "String privateKeyPath = \"/var/ig/secrets/jwt-private.pem\"",
+                  "",
+                  "def generateInternalToken = { String userId ->",
+                  "",
+                  "    logger.info(\"INTERNAL_TOKEN_FILTER: Leyendo clave privada PEM (PKCS#8)\");",
+                  "    String pem = new String(Files.readAllBytes(Paths.get(privateKeyPath)), \"UTF-8\")",
+                  "",
+                  "    String privateKeyContent = pem",
+                  "        .replace(\"-----BEGIN PRIVATE KEY-----\", \"\")",
+                  "        .replace(\"-----END PRIVATE KEY-----\", \"\")",
+                  "        .replaceAll(\"\\\\s\", \"\")",
+                  "",
+                  "    byte[] keyBytes = Base64.decoder.decode(privateKeyContent)",
+                  "",
+                  "    def keySpec = new PKCS8EncodedKeySpec(keyBytes)",
+                  "    def privateKey = KeyFactory.getInstance(\"RSA\").generatePrivate(keySpec)",
+                  "",
+                  "    long now = System.currentTimeMillis() / 1000L",
+                  "",
+                  "    // Header JWT",
+                  "    def header = [ alg: \"RS256\", typ: \"JWT\"]",
+                  "",
+                  "    // Claims de ejemplo",
+                  "    def payload = [",
+                  "        iss: \"forgerock-ig\",",
+                  "        sub: userId,",
+                  "        iat: now,",
+                  "        exp: now + 60L,",
+                  "        jti: UUID.randomUUID().toString(),",
+                  "        transaction: \"TX-12345\"",
+                  "    ]",
+                  "    logger.info(\"INTERNAL_TOKEN_FILTER: Payload generado correctamente\");",
+                  "",
+                  "    def encoder = Base64.urlEncoder.withoutPadding()",
+                  "",
+                  "    String encodedHeader = encoder.encodeToString(JsonOutput.toJson(header).getBytes(\"UTF-8\"))",
+                  "",
+                  "    String encodedPayload = encoder.encodeToString(JsonOutput.toJson(payload).getBytes(\"UTF-8\"))",
+                  "",
+                  "    String signingInput = encodedHeader + \".\" + encodedPayload",
+                  "",
+                  "    // Firmar con RSA + SHA-256",
+                  "    Signature signer = Signature.getInstance(\"SHA256withRSA\")",
+                  "    signer.initSign(privateKey)",
+                  "    signer.update(signingInput.getBytes(\"UTF-8\"))",
+                  "",
+                  "    String signature = encoder.encodeToString(signer.sign())",
+                  "",
+                  "    return signingInput + \".\" + signature",
+                  "}",
+                  "",
+                  "try {",
+                  "    String internalToken = generateInternalToken(\"user123\")",
+                  "    request.getHeaders().put(\"X-Internal-Authorization\", \"Bearer \" + internalToken)",
+                  "    logger.info(\"INTERNAL_TOKEN_FILTER: Cabecera X-Internal-Authorization agregada\")",
+                  "} catch (Exception e) {",
+                  "    logger.error(\"INTERNAL_TOKEN_FILTER: Error al agregar la cabecera\", e)",
+                  "    throw e",
+                  "}",
+                  "",
+                  "return next.handle(context, request).then { response ->",
+                  "    logger.info(\"INTERNAL_TOKEN_FILTER: Response status = {}\", response.status)",
+                  "    return response",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17-api-integration-token.json",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "{",
+                  "    \"name\": \"17-apis-integration-token\",",
+                  "    \"condition\": \"${find(request.uri.path, '^/integration-token')}\",",
+                  "    \"baseURI\": \"${sessionApiBaseUrl}\",",
+                  "    \"handler\": {",
+                  "        \"type\": \"Chain\",",
+                  "        \"config\": {",
+                  "            \"filters\": [",
+                  "                {",
+                  "                    \"name\": \"company-Oauth-integration-token\",",
+                  "                    \"type\": \"OAuth2ResourceServerFilter\",",
+                  "                    \"config\": {",
+                  "                        \"requireHttps\": false,",
+                  "                        \"scopes\": [\"IG:Integration\"],",
+                  "                        \"accessTokenResolver\": \"company-cache-access-token\"",
+                  "                    }",
+                  "                },",
+                  "                {",
+                  "                    \"type\": \"UriPathRewriteFilter\",",
+                  "                    \"config\": {",
+                  "                        \"mappings\": {",
+                  "                            \"/integration-token\": \"/\"",
+                  "                        }",
+                  "                    }",
+                  "                },",
+                  "                {",
+                  "                    \"name\": \"company-integration-token\",",
+                  "                    \"type\": \"ScriptableFilter\",",
+                  "                    \"config\": {",
+                  "                        \"type\": \"application/x-groovy\",",
+                  "                        \"file\": \"InternalTokenFilter.groovy\"",
+                  "                    }",
+                  "                }",
+                  "            ],",
+                  "            \"handler\": {",
+                  "                \"type\": \"ReverseProxyHandler\",",
+                  "                \"config\": {",
+                  "                    \"tls\": {",
+                  "                        \"type\": \"ClientTlsOptions\",",
+                  "                        \"config\": {",
+                  "                            \"trustManager\": {",
+                  "                                \"type\": \"TrustAllManager\"",
+                  "                            }",
+                  "                        }",
+                  "                    },",
+                  "                    \"hostnameVerifier\": \"ALLOW_ALL\"",
+                  "                }",
+                  "            }",
+                  "        }",
+                  "    }",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "config.json",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "{",
+                  "    \"properties\": {",
+                  "        \"amUsername\": \"testuser\",",
+                  "        \"amPassword\": \"Password123!\",",
+                  "        \"companyIgAgentUsername\": \"company-ig-agent\",",
+                  "",
+                  "        \"sessionApiBaseUrl\": \"http://ciam-api.forgerock.svc.cluster.local:8082\",",
+                  "        \"idcBaseUrl\": \"http://am.forgerock.svc.cluster.local/am\",",
+                  "",
+                  "        \"revocationClientId\": \"ig-session-revoker\",",
+                  "        \"revocationClientSecret\": \"adminoauth\",",
+                  "",
+                  "        \"ciamSubscriptionKey\": \"123456789012345678901234567890123\",",
+                  "",
+                  "        \"introspectionClientId\": \"mobile-simulator\",",
+                  "        \"introspectionClientSecret\": \"mobile-secret\"",
+                  "    },",
+                  "    \"globalDecorator\": {",
+                  "        \"timer\": true,",
+                  "        \"capture\": \"all\"",
+                  "    },",
+                  "    \"handler\": {",
+                  "        \"type\": \"DispatchHandler\",",
+                  "        \"config\": {",
+                  "            \"bindings\": [",
+                  "                {",
+                  "                    \"condition\": \"${request.uri.host == env['MY_POD_IP']}\",",
+                  "                    \"handler\": {",
+                  "                        \"name\": \"router-pod\",",
+                  "                        \"type\": \"Router\",",
+                  "                        \"config\": {",
+                  "                            \"scanInterval\": \"disabled\",",
+                  "                            \"directory\": \"${openig.configDirectory}/routes-pod\"",
+                  "                        }",
+                  "                    }",
+                  "                },",
+                  "                {",
+                  "                    \"condition\": \"${request.uri.host != env['MY_POD_IP']}\",",
+                  "                    \"handler\": {",
+                  "                        \"name\": \"router-service\",",
+                  "                        \"type\": \"Router\",",
+                  "                        \"config\": {",
+                  "                            \"scanInterval\": \"disabled\",",
+                  "                            \"directory\": \"${openig.configDirectory}/routes-service\"",
+                  "                        }",
+                  "                    }",
+                  "                }",
+                  "            ]",
+                  "        }",
+                  "    },",
+                  "    \"heap\": [",
+                  "        {",
+                  "            \"name\": \"JwtSession\",",
+                  "            \"type\": \"JwtSession\"",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"company-am-service\",",
+                  "            \"type\": \"AmService\",",
+                  "            \"config\": {",
+                  "                \"url\": \"http://am/am\",",
+                  "                \"realm\": \"/\",",
+                  "                \"version\": \"7.1\",",
+                  "                \"agent\": {",
+                  "                    \"username\": \"${companyIgAgentUsername}\",",
+                  "                    \"passwordSecretId\": \"companyIgAgent.password\"",
+                  "                },",
+                  "                \"secretsProvider\": \"amSecretsProvider\",",
+                  "                \"sessionCache\": {",
+                  "                    \"enabled\": false",
+                  "                },",
+                  "                \"sessionIdleRefresh\": {",
+                  "                    \"enabled\": true,",
+                  "                    \"interval\": \"3 m\"",
+                  "                }",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"authenticate-am-chain\",",
+                  "            \"type\": \"Chain\",",
+                  "            \"config\": {",
+                  "                \"handler\": \"ClientHandler\",",
+                  "                \"filters\": [\"authenticate-am-filter\"]",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"authenticate-am-filter\",",
+                  "            \"type\": \"HeaderFilter\",",
+                  "            \"config\": {",
+                  "                \"messageType\": \"REQUEST\",",
+                  "                \"add\": {",
+                  "                    \"Authorization\": [",
+                  "                        \"Basic ${encodeBase64(join(array(introspectionClientId, introspectionClientSecret), ':'))}\"",
+                  "                    ]",
+                  "                }",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"company-token-introspection\",",
+                  "            \"type\": \"TokenIntrospectionAccessTokenResolver\",",
+                  "            \"config\": {",
+                  "                \"amService\": \"company-am-service\",",
+                  "                \"providerHandler\": \"authenticate-am-chain\"",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"company-cache-access-token\",",
+                  "            \"type\": \"CacheAccessTokenResolver\",",
+                  "            \"config\": {",
+                  "                \"enabled\": true,",
+                  "                \"defaultTimeout\": \"1 hour\",",
+                  "                \"maximumTimeToCache\": \"1 hour\",",
+                  "                \"delegate\": \"company-token-introspection\",",
+                  "                \"amService\": \"company-am-service\"",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"company-security-headers\",",
+                  "            \"type\": \"ScriptableFilter\",",
+                  "            \"config\": {",
+                  "                \"type\": \"application/x-groovy\",",
+                  "                \"file\": \"SecurityHeaders.groovy\"",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"AmService-1\",",
+                  "            \"type\": \"AmService\",",
+                  "            \"config\": {",
+                  "                \"url\": \"http://am/am\",",
+                  "                \"realm\": \"/\",",
+                  "                \"secretsProvider\": \"amSecretsProvider\",",
+                  "                \"agent\": {",
+                  "                    \"username\": \"ig-agent\",",
+                  "                    \"passwordSecretId\": \"agent.password\"",
+                  "                },",
+                  "                \"sessionCache\": {",
+                  "                    \"enabled\": true",
+                  "                }",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"ForgeRockClientHandler\",",
+                  "            \"type\": \"ClientHandler\",",
+                  "            \"config\": {",
+                  "                \"trustManager\": {",
+                  "                    \"type\": \"TrustAllManager\"",
+                  "                }",
+                  "            },",
+                  "            \"_capture\": \"all\"",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"amSecretsProvider\",",
+                  "            \"type\": \"SecretsProvider\",",
+                  "            \"config\": {",
+                  "                \"stores\": [",
+                  "                    {",
+                  "                        \"type\": \"Base64EncodedSecretStore\",",
+                  "                        \"config\": {",
+                  "                            \"_comment\": \"base64('password') = 'cGFzc3dvcmQ='\",",
+                  "                            \"secrets\": {",
+                  "                                \"agent.password\": \"cGFzc3dvcmQ=\",",
+                  "                                \"companyIgAgent.password\": \"YWRtaW5pZw==\"",
+                  "                            }",
+                  "                        }",
+                  "                    }",
+                  "                ]",
+                  "            }",
+                  "        },",
+                  "        {",
+                  "            \"name\": \"pemPropertyFormat\",",
+                  "            \"type\": \"PemPropertyFormat\"",
+                  "        },",
+                  "        {",
+                  "            \"type\": \"SecretsProvider\",",
+                  "            \"name\": \"tokenBSecretsProvider\",",
+                  "            \"config\": {",
+                  "                \"stores\": [",
+                  "                    {",
+                  "                        \"type\": \"FileSystemSecretStore\",",
+                  "                        \"config\": {",
+                  "                            \"directory\": \"/var/ig/secrets\",",
+                  "                            \"format\": \"PLAIN\",",
+                  "                            \"suffix\": \".pem\",",
+                  "                            \"mappings\": [",
+                  "                                {",
+                  "                                    \"secretId\": \"tokenBSigningKey\",",
+                  "                                    \"format\": \"pemPropertyFormat\"",
+                  "                                }",
+                  "                            ]",
+                  "                        }",
+                  "                    }",
+                  "                ]",
+                  "            }",
+                  "        }",
+                  "    ],",
+                  "    \"monitor\": true",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "jwt-private.pem",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "-----BEGIN PRIVATE KEY-----",
+                  "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC+xeD6xz4frQ6v",
+                  "MDvrH2kgWDfc3BNImJh+vISiO80cf6nmgxP50qJM/dgJMr4FmzXaHSUiOCGGc43h",
+                  "hY1j/n6u68GPsw3T6A2UG8Ni9/RklO6UaWCLIBarYBNX3haf9oDi0g7JlwUo2ad8",
+                  "MYGjo75nOQw6rISZhpujTLtaj8sQjbYP+HZri5AZ7xlnqpiJ79grOwSdE7/O5rgu",
+                  "Aa3UqX5edJStiy7uxiWpy1d7VyNdbFDTpUU27i/35F0G4071s/pKr2b3bUEWOvxt",
+                  "yXTph3a5SdX9O5BPVfrl4pxNv/tbFaQZaUaM/csHuUQfOb3nCY/7X/oB3xO5tDbV",
+                  "j5Hpn34pAgMBAAECggEAAvDNf17FndWhh7Czxb5X1PUDKcMrLsKVEYQMpoG15KSb",
+                  "okyJiOpBe0lrlHW3poy4+L4bryJkHZH9AS75X1iXjDuhAdBB4Zm0EYvC2Den/jUU",
+                  "/zeSHUbkTpCLhR6CD7BsK22PPIst8U5MldOfXX3rSWT12SwvsDxPfHCKT/KuOm4G",
+                  "okM6x/2YtN3yescHiIZnFstTrTdJR3iRDV/hlYgwnHh2J9DrsknoTDXfQsn2jqZk",
+                  "OcPbsxvyHb0he8lxHdLsp9uk9FbTgNvuAx8GI4YKq08LqsPyPEa5EDcINlCI1Bj+",
+                  "5BDr4VF5VTuCvrJkJt/XwbVoB27sbAUlxzrFkevm4QKBgQDe3gtiQkl6CWEnrHVn",
+                  "18VCpVMnt7hHrcdsHSzWz+CiQs5+0qfSQaGx+QayKncx2WfO4v35GUnhKRRakI4A",
+                  "rcAcSfvu8bHAMCYUc92StLx7QeRGV9B72CVf4fdws8xf1ryjpGIWebTk0EI8hMGz",
+                  "RbfO4hlXcMJCH2WsRQq3Z0KzCQKBgQDbImAzn6TDAdlnu7DyLHGdzdqmid0Mjb+z",
+                  "pGMx02/YBfao7uYleWjEX2lEFKSZaln13lgiw9KlfeEnWBnXb9gfpk3rOVNu0TaR",
+                  "nON3Niww9sGb5m6owDnCLD1r2/zXiCazw05ufdGOY230bb0abs6Z1p5fMxkIeyFD",
+                  "WttMDXuaIQKBgQDBy5tiifmSoO1WrmQ5NCtX1KMGen9H9RjgLk57TLAs6KLfLRa5",
+                  "glC0jbMA4mRbeI0IHeJy5UaVAD+usNyKQow3DS6BjLHgSP4T8tzNYVQ0aguyD1I/",
+                  "HqkBQ2EDI5WoEPZf5eVVXeeqwF2YemhlF07KG1ml62tATEUBE9hJuwUI4QKBgCeq",
+                  "fk157WIbOJZNZEdCAkL1W0ngFLJMClJjRE1ln44z7iVAMUrBQlShjLV1IyJeHPCj",
+                  "kcKhPcUVFyd/DBZyOWXpPZuBofeiSUVsZ8RRewhV8k/dE1Tajtn2FhwrEwaUr6TE",
+                  "irL3dXJXzzR6lMtvGVjBf6Nt5W8ikq/Vh3Kp0iDhAoGACZSS1yq0JxLlIH620k8g",
+                  "mvD12zxgfpMes7oxiPlLoly7Yz6BwAoYfcYRyQZ+CUj6tLHa7fRF/MHOWuRl2Tkn",
+                  "aessv1jmCwiS146dTb/A877jKSQK3FBl78viOjwjpIDLInxWEvHXe0v93Xx2Q7bm",
+                  "VllVQTf7fG/Vdfd4KVhjesQ=",
+                  "-----END PRIVATE KEY-----",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "jwt-public.pem",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "-----BEGIN PUBLIC KEY-----",
+                  "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvsXg+sc+H60OrzA76x9p",
+                  "IFg33NwTSJiYfryEojvNHH+p5oMT+dKiTP3YCTK+BZs12h0lIjghhnON4YWNY/5+",
+                  "ruvBj7MN0+gNlBvDYvf0ZJTulGlgiyAWq2ATV94Wn/aA4tIOyZcFKNmnfDGBo6O+",
+                  "ZzkMOqyEmYabo0y7Wo/LEI22D/h2a4uQGe8ZZ6qYie/YKzsEnRO/zua4LgGt1Kl+",
+                  "XnSUrYsu7sYlqctXe1cjXWxQ06VFNu4v9+RdBuNO9bP6Sq9m921BFjr8bcl06Yd2",
+                  "uUnV/TuQT1X65eKcTb/7WxWkGWlGjP3LB7lEHzm95wmP+1/6Ad8TubQ21Y+R6Z9+",
+                  "KQIDAQAB",
+                  "-----END PUBLIC KEY-----",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logback.xml",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "",
+                  "<configuration>",
+                  "    <appender name=\"STDOUT\" class=\"ch.qos.logback.core.ConsoleAppender\">",
+                  "        <encoder>",
+                  "            <pattern>%nopex[%thread] %highlight(%-5level) %boldWhite(%logger{35}) -",
+                  "                %message%n%highlight(%rootException{short})",
+                  "            </pattern>",
+                  "        </encoder>",
+                  "    </appender>",
+                  "     ",
+                  "    <appender name=\"SIFT\" class=\"ch.qos.logback.classic.sift.SiftingAppender\">",
+                  "        <discriminator>",
+                  "            <key>routeId</key>",
+                  "            <defaultValue>system</defaultValue>",
+                  "        </discriminator>",
+                  "        <sift>",
+                  "            <!-- Create a separate log file for each <key> -->",
+                  "            <appender name=\"FILE-${routeId}\" class=\"ch.qos.logback.core.rolling.RollingFileAppender\">",
+                  "                <file>${openig.base}/logs/route-${routeId}.log</file>",
+                  "                 ",
+                  "                <rollingPolicy class=\"ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy\">",
+                  "                    <!-- Rotate files daily -->",
+                  "                    <fileNamePattern>${openig.base}/logs/route-${routeId}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>",
+                  "                     ",
+                  "                    <!-- each file should be at most 100MB, keep 30 days worth of history, but at most 3GB -->",
+                  "                    <maxFileSize>100MB</maxFileSize>",
+                  "                    <maxHistory>30</maxHistory>",
+                  "                    <totalSizeCap>3GB</totalSizeCap>",
+                  "                </rollingPolicy>",
+                  "                 ",
+                  "                <encoder>",
+                  "                    <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%logger{35}] - %message %rootException{short}</pattern>",
+                  "                </encoder>",
+                  "            </appender>",
+                  "        </sift>",
+                  "    </appender>",
+                  "",
+                  "    <logger name=\"org.forgerock.openig\" level=\"TRACE\"/>",
+                  "    <logger name=\"org.forgerock.openig.handler\" level=\"TRACE\"/>",
+                  "    <logger name=\"org.forgerock.openig.filter\" level=\"TRACE\"/>",
+                  "    <logger name=\"org.forgerock.http\" level=\"TRACE\"/>",
+                  "    <logger name=\"company-internal-token\" level=\"TRACE\"/>",
+                  "    <logger name=\"company-redis-script-filter\" level=\"TRACE\"/>",
+                  "     ",
+                  "    <root level=\"INFO\">",
+                  "        <appender-ref ref=\"STDOUT\"/>",
+                  "    </root>",
+                  "</configuration>",
+                  "",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Commands.md",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "mkdir -p secrets",
+                  "cd secrets",
+                  "",
+                  "# Clave privada: solamente IG debe utilizarla para firmar",
+                  "openssl genpkey \\",
+                  "  -algorithm RSA \\",
+                  "  -pkeyopt rsa_keygen_bits:2048 \\",
+                  "  -out jwt-private.pem",
+                  "",
+                  "# Clave pública: los backends la utilizan para verificar",
+                  "openssl pkey \\",
+                  "  -in jwt-private.pem \\",
+                  "  -pubout \\",
+                  "  -out jwt-public.pem"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080"
             }
           },
           "response": []
