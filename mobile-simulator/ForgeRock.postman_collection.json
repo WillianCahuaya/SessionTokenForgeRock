@@ -2849,12 +2849,12 @@
               }
             ],
             "url": {
-              "raw": "{{ig_url}}/integration-session/ciam/session/v1/register",
+              "raw": "{{ig_url}}/integration-token/ciam/session/v1/register",
               "host": [
                 "{{ig_url}}"
               ],
               "path": [
-                "integration-session",
+                "integration-token",
                 "ciam",
                 "session",
                 "v1",

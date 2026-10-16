@@ -1,0 +1,6 @@
+namespace: forgerock
+
+resources:
+    - ../kustomizationConfig
+    - ingress.yaml
+    - secret.yaml

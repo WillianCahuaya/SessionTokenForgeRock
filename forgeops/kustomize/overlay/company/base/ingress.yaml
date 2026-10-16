@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: ig-web
+    annotations:
+        kubernetes.io/ingress.class: azure/application-gateway
+spec:
+    tls:
+        - hosts:
+              - '<FQDN>'
+          secretName: sslcert
+    rules:
+        - host: '<FQDN>'
+          http:
+              paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                        service:
+                            name: ig
+                            port:
+                                number: 8080

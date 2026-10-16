@@ -28,7 +28,7 @@
                     "type": "ScriptableFilter",
                     "config": {
                         "type": "application/x-groovy",
-                        "file": "InternalTokenFilter.groovy"
+                        "file": "InternalToken.groovy"
                     }
                 }
             ],

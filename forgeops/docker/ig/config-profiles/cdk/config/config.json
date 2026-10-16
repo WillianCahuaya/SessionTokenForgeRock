@@ -54,6 +54,13 @@
             "type": "JwtSession"
         },
         {
+            "name": "system-and-env-secret-store",
+            "type": "SystemAndEnvSecretStore",
+            "config": {
+                "format": "PLAIN"
+            }
+        },
+        {
             "name": "company-am-service",
             "type": "AmService",
             "config": {
