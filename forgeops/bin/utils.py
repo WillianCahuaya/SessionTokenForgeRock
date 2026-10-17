@@ -1,4 +1,4 @@
-"""This is a shared lib used by other /bin python scripts"""
+﻿"""This is a shared lib used by other /bin python scripts"""
 
 import subprocess
 import shlex
@@ -244,7 +244,13 @@ def run(cmd, *cmdArgs, stdin=None, cstdout=False, cstderr=False, cwd=None, env=N
     stdo_pipe = subprocess.PIPE if cstdout else None
     log.debug(f'Running: "{runcmd}"' + (f' in CWD="{os.path.abspath(cwd)}"' if cwd else ''))
     try:
-        _r = subprocess.run(shlex.split(runcmd), stdout=stdo_pipe, stderr=stde_pipe,
+        args = [cmd]
+        for arg in cmdArgs:
+            if os.path.isabs(arg):
+                args.append(arg)
+            else:
+                args.extend(shlex.split(arg))
+        _r = subprocess.run(args, stdout=stdo_pipe, stderr=stde_pipe,
                             check=True, input=stdin, cwd=cwd, env=env)
         return _r.returncode == 0, _r.stdout, _r.stderr
     except Exception as e:
@@ -409,7 +415,7 @@ def generate_package(component, size, ns, fqdn, ingress_class, ctx, legacy, conf
     shutil.rmtree(profile_dir, ignore_errors=True)
     Path(profile_dir).mkdir(parents=True, exist_ok=True)
     run('kustomize', f'create', cwd=profile_dir)
-    run('kustomize', f'edit add component {os.path.relpath(image_defaulter, profile_dir)}',
+    run('kustomize', f'edit add component {os.path.relpath(image_defaulter, profile_dir).replace(os.sep, '/')}',
               cwd=profile_dir)
 
     # Set component to DS Operator if operator argument is true
@@ -461,7 +467,7 @@ def generate_package(component, size, ns, fqdn, ingress_class, ctx, legacy, conf
             cwd=profile_dir)
         # run('kustomize', f'edit add patch --name icf-ingress --kind Ingress --version v1 --patch \'{json.dumps(ingressclasspatchjson)}\'',
         #     cwd=profile_dir)
-    _, contents, _ = run('kustomize', f'build {profile_dir}', cstdout=True)
+    _, contents, _ = run('kustomize', 'build', profile_dir, cstdout=True)
     contents = contents.decode('ascii')
     contents = contents.replace('namespace: default', f'namespace: {ns}')
     contents = contents.replace('namespace: prod', f'namespace: {ns}')
@@ -544,8 +550,8 @@ def _inject_kustomize_amster(kustomize_profile_path, config_profile):
     try:
         envVars = os.environ
         envVars['COPYFILE_DISABLE'] = '1'  #skips "._" files in macOS.
-        run('tar', f'-czf amster-import.tar.gz -C {amster_config_path} .', cstdout=True, env=envVars)
-        run('tar', f'-czf amster-scripts.tar.gz -C {amster_scripts_path} .', cstdout=True, env=envVars)
+        run('tar', '-czf', 'amster-import.tar.gz', '-C', amster_config_path.replace(os.sep, '/'), '.', cstdout=True, env=envVars)
+        run('tar', '-czf', 'amster-scripts.tar.gz', '-C', amster_scripts_path.replace(os.sep, '/'), '.', cstdout=True, env=envVars)
         _, cm, _ = run('kubectl', f'create cm amster-files --from-file=amster-import.tar.gz --from-file=amster-scripts.tar.gz --dry-run=client -o yaml',
                     cstdout=True)
         with open(amster_cm_path, 'wt') as f:
@@ -882,3 +888,7 @@ def clean_amster_job(ns, retain):
     if os.path.exists('amster-scripts.tar.gz'):
         os.remove('amster-scripts.tar.gz')
     return
+
+
+
+

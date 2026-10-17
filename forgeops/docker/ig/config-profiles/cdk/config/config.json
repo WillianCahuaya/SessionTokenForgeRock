@@ -1,8 +1,8 @@
-{
+﻿{
     "properties": {
         "amUsername": "testuser",
         "amPassword": "Password123!",
-        "companyIgAgentUsername": "company-ig-agent",
+        "companyIgAgentUsername": "ig-agent",
 
         "sessionApiBaseUrl": "http://ciam-api.forgerock.svc.cluster.local:8082",
         "idcBaseUrl": "http://am.forgerock.svc.cluster.local/am",
@@ -165,7 +165,7 @@
                             "_comment": "base64('password') = 'cGFzc3dvcmQ='",
                             "secrets": {
                                 "agent.password": "cGFzc3dvcmQ=",
-                                "companyIgAgent.password": "YWRtaW5pZw=="
+                                "companyIgAgent.password": "cGFzc3dvcmQ="
                             }
                         }
                     }
@@ -201,3 +201,4 @@
     ],
     "monitor": true
 }
+
